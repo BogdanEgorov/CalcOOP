@@ -1,10 +1,15 @@
 import datetime as dt
 
+
 class Record:
-    def __init__(self, amount, date, comment):
+    def __init__(self, amount, comment, date=None):
         self.amount = amount
-        self.date = dt.datetime.today()
+        if date is not None:
+            self.date = dt.datetime.strptime(date, '%d.%m.%Y').date()
+        else:
+            self.date = dt.date.today()
         self.comment = comment
+
 
 class Calculator:
     def __init__(self, limit):
@@ -25,8 +30,16 @@ class Calculator:
         week_stats = sum(record.amount for record in self.records)
         return week_stats
 
-class CaloriesCalculator:
-    def get_calories_remained(limit):
+    def remained(self):
+        return self.limit - self.get_today_stats()
+
+
+class CaloriesCalculator(Calculator):
+
+    def __init__(self, limit):
+        super().__init__(limit)
+
+    def get_calories_remained(self, limit):
 
         calories_remained = limit - Calculator.get_today_stats()
         if calories_remained <= 0:
@@ -34,24 +47,31 @@ class CaloriesCalculator:
         else:
             return ("Сегодня можно съесть что-нибудь ещё, но с общей калорийностью не более" + {calories_remained} + "кКал")
 
-class CashCalculator:
 
-        USD_RATE = 78.0
-        EURO_RATE = 88.0
-        RUB_RATE = 1.0
+class CashCalculator(Calculator):
 
-        def get_today_cash_remained(self, currency):
-            cash_remained = self.remained()
-            if cash_remained == 0:
-                return 'Денег нет, держись'
-            currencies = {
-                'eur': ('Euro', self.EURO_RATE),
-                'usd': ('USD', self.USD_RATE),
-                'rub': ('руб', self.RUB_RATE),
-            }
-            if cash_remained > 0:
-                return f'На сегодня осталось {cash_remained} '
-            if cash_remained < 0:
-                return f'Денег нет, держись: твой долг - {cash_remained}'
+    USD_RATE = 78.0
+    EURO_RATE = 88.0
+    RUB_RATE = 1.0
 
+    def __init__(self, limit):
+        super().__init__(limit)
+
+    def get_today_cash_remained(self, currency):
+        cash_remained = self.remained()
+        if cash_remained == 0:
+            return 'Денег нет, держись'
+        currencies = {
+            'eur': ('Euro', self.EURO_RATE),
+            'usd': ('USD', self.USD_RATE),
+            'rub': ('руб', self.RUB_RATE),
+        }
+        if currency not in currencies:
+            return 'No such currency.'
+        sign, rate = currencies.get(currency)
+        cash_remained = round(cash_remained / rate, 2)
+        if cash_remained > 0:
+            return f'На сегодня осталось {cash_remained} {sign}'
+        cash_remained = abs(cash_remained)
+        return f'Денег нет, держись: твой долг - {cash_remained} {sign}'
 
