@@ -20,8 +20,8 @@ class Calculator:
         self.records.append(record)
 
     def get_today_stats(self):
-        today = dt.datetime.now()
-        today_stats = sum(record.amount for record in self.records)
+        today = dt.datetime.now().date()
+        today_stats = sum(record.amount if record.date == today else 0 for record in self.records)
         return today_stats
 
     def get_week_stats(self):
@@ -39,13 +39,13 @@ class CaloriesCalculator(Calculator):
     def __init__(self, limit):
         super().__init__(limit)
 
-    def get_calories_remained(self, limit):
-
-        calories_remained = limit - Calculator.get_today_stats()
+    def get_calories_remained(self):
+        calories_remained = self.limit - self.get_today_stats()
         if calories_remained <= 0:
-            return "Хватит есть!"
+            print("Хватит есть!")
         else:
-            return ("Сегодня можно съесть что-нибудь ещё, но с общей калорийностью не более" + {calories_remained} + "кКал")
+            print(f"Сегодня можно съесть что-нибудь ещё, но с общей калорийностью не более {calories_remained} кКал")
+        return calories_remained
 
 
 class CashCalculator(Calculator):
